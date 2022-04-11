@@ -1,0 +1,177 @@
+public class MazdaHotLineCasesController {
+    /*
+* Added By : Saurabh Bhankhede
+* Added on : 03/22/2022
+* Purpose  : To get Hotline SR Cases  
+*/
+    @AuraEnabled
+    public static Map<String,list<String>> getSRHotlineCaseDetails(Id recordId) {
+        System.debug('Case RecordId'+ recordId); // Getting Case Record associated with Vehicle.
+        Map<String,list<String>> mSHDetails = new Map<String,list<String>>(); //Store All Hotline Response against hlRefNo.
+        if(string.isEmpty(recordId)){
+            throw new AuraHandledException('Vehicle Mapping Field is not provided in Case');     
+        }
+        else{
+            Set<Id> VehicleISet = new Set<Id>();
+            for(Case obj : [SELECT Id,MTTC_Vehicle__c FROM Case WHERE Id =:recordId]){
+                VehicleISet.add(obj.MTTC_Vehicle__c);
+            }            
+            System.debug('VehicleISet'+ VehicleISet);
+            Vehicle__c oVehicle = new Vehicle__c();
+            if(VehicleISet == null){
+                return null;
+            }
+            else{
+                if(VehicleISet != null){
+                    system.debug('Got Vehicle');
+                    oVehicle = [SELECT id, MNAO_VIN__c, MNAO_HotlineFlag__c FROM Vehicle__c WHERE Id =: VehicleISet AND MNAO_HotlineFlag__c = True];
+                }
+                String URI = '';
+                system.debug('Vehicle Name====' + oVehicle.MNAO_VIN__c);
+                if(!String.isEmpty(oVehicle.MNAO_VIN__c)){
+                    URI =+ '/vehicle/'+oVehicle.MNAO_VIN__c+'/hotline';
+                }
+                System.debug('URI ====='+URI);
+                String response = MulesoftCallout.doCalloutGet(URI);
+                System.debug('response getting ====='+response);
+                
+                HistoricalHotLineResponseWrapper historicalSRWrap = HistoricalHotLineResponseWrapper.parse(response);
+                System.debug('After 200 ====='+historicalSRWrap);
+                list<HistoricalHotLineResponseWrapper.HotlineCases> lSRDetail =  historicalSRWrap.hotlineList;
+                System.debug('After 200 1====='+lSRDetail);
+                
+                
+                for(HistoricalHotLineResponseWrapper.HotlineCases oSR: lSRDetail){
+                    list<String> lDetails = new list<String>();
+                    String VIN = String.valueOf(oSR.VIN);
+                    System.debug('VIN = '+VIN); 
+                    lDetails.add(VIN);
+                    String type = String.valueOf(oSR.type);
+                    System.debug('type = '+type); 
+                    lDetails.add(type);
+                    String status = String.valueOf(oSR.status);
+                    System.debug('status = '+status); 
+                    lDetails.add(status);
+                    String hlRefNo = String.valueOf(oSR.hlRefNo);
+                    System.debug('hlRefNo = '+hlRefNo); 
+                    lDetails.add(hlRefNo);
+                    String closedDate = String.valueOf(oSR.closedDate);
+                    System.debug('closedDate = '+closedDate); 
+                    lDetails.add(closedDate);
+                    String createdDate = String.valueOf(oSR.createdDate);
+                    System.debug('createdDate = '+createdDate);
+                    lDetails.add(createdDate);
+                    mSHDetails.put(hlRefNo,lDetails);
+                }
+                System.debug('mSHDetails'+mSHDetails);
+                System.debug('mSHDetails Size'+mSHDetails.size());
+                return mSHDetails;
+            }
+        }
+    } 
+    
+    /*
+* Added By : Saurabh Bhankhede
+* Added on : 03/22/2022
+* Purpose  : To get Hotline SR Cases  
+*/
+    @AuraEnabled
+    public static Map<String,list<String>> getHLRefNoFromHotline(String SelectedHLRefNo) {
+        System.debug('SelectedHLRefNo:::'+ SelectedHLRefNo);
+        Map<String,list<String>> mSHDetails = new Map<String,list<String>>();
+        
+        //if(!String.isEmpty(SelectedHLRefNo)){
+        //String URI = '/hotline/'+ SelectedHLRefNo;
+        //System.debug('URI ====='+URI);
+        //String res = MulesoftCallout.doCalloutGet(URI);
+        //System.debug('response getting ====='+ res);
+        
+        String SelectedHLRefNo1 = SelectedHLRefNo;
+        String URI = '/hotline/'+ SelectedHLRefNo1;
+        String res = MulesoftCallout.doCalloutGet(URI);
+        System.debug('res++++'+ res);
+        
+        
+        HistoricalHotLineResponseWrapper hotlineWrap = HistoricalHotLineResponseWrapper.parse(res);
+        System.debug('After 200 ====='+hotlineWrap);
+        HistoricalHotLineResponseWrapper.HotlineDetail oSR =  hotlineWrap.hotlineDetail[0];
+        System.debug('oSR'+oSR);
+        list<String> hlRefNumberList = new list<String>();
+        System.debug('hlRefNumberList'+hlRefNumberList);
+        String VIN = String.valueOf(oSR.VIN);
+        System.debug('VIN ::: '+VIN);
+        hlRefNumberList.add('VIN : '+VIN);
+        
+        String model = String.valueOf(oSR.model);
+        System.debug('Model ::: '+model);
+        hlRefNumberList.add('Model : '+model);
+        
+        String modelCd = String.valueOf(oSR.modelCd);
+        System.debug('Model Cd ::: '+modelCd);
+        hlRefNumberList.add('Model Cd : '+modelCd);
+        
+        String carline = String.valueOf(oSR.carline);
+        System.debug('Carline ::: '+carline);
+        hlRefNumberList.add('Carline : '+carline);
+        
+        String customerConcern = String.valueOf(oSR.customerConcern);
+        System.debug('Customer Concern ::: '+customerConcern);
+        hlRefNumberList.add('Customer Concern : '+customerConcern);
+        
+        String dlrCd = String.valueOf(oSR.dlrCd);
+        System.debug('dlr Cd ::: '+dlrCd);
+        hlRefNumberList.add('dlr Cd : '+dlrCd);
+        
+        String dlrName = String.valueOf(oSR.dlrName);
+        System.debug('dlr Name ::: '+dlrName);
+        hlRefNumberList.add('dlr Name : '+dlrName);
+        
+        String dlrPhone = String.valueOf(oSR.dlrPhone);
+        System.debug('dlr Phone ::: '+dlrPhone);
+        hlRefNumberList.add('dlr Phone : '+dlrPhone);
+        
+        String hasAttachments = String.valueOf(oSR.hasAttachments);
+        System.debug('Has Attachments'+hasAttachments);
+        hlRefNumberList.add('Has Attachments : '+hasAttachments);
+        mSHDetails.put(SelectedHLRefNo,hlRefNumberList);
+        System.debug('mSHDetails'+mSHDetails);
+        System.debug('mSHDetails Size'+mSHDetails.size());
+        return mSHDetails;
+    }
+    
+    /*
+* Added By : Saurabh Bhankhede
+* Added on : 03/22/2022
+* Purpose  : To get Hotline SR Cases  
+*/
+    @AuraEnabled
+    public static Map<String,String> getSRDetailsColumns(list<String> SiebelSRDetailColumns){
+        Map<String,String> mVehColumn =  new Map<String,String>();
+        System.debug('SiebelSRDetailColumns'+SiebelSRDetailColumns);
+        System.debug('SiebelSRDetailColumns'+SiebelSRDetailColumns.size());
+        if(SiebelSRDetailColumns.size() > 0){
+            list<String> lColumns = SiebelSRDetailColumns[0].split(',');
+            for(String oColumn : lColumns){
+                if(oColumn.contains('::')){
+                    list<String> lValue =  oColumn.split('::'); 
+                    if(lValue.size() == 2){
+                        String Name = lValue[0];
+                        String Label = lValue[1];
+                        mVehColumn.put(Name,Label);
+                    }
+                    else{
+                        throw new AuraHandledException('Name/Label is missing for Vehicle Filter'+oColumn);     
+                    }
+                }
+                else{
+                    throw new AuraHandledException('Name/Label is missing for Vehicle Filter'+oColumn);     
+                }
+            }
+            System.debug('mVehColumn'+mVehColumn);
+            return mVehColumn;
+        }
+        else{
+            throw new AuraHandledException('Siebel SR  Fields are not provided');  
+        }
+    }  
+}

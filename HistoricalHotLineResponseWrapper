@@ -1,0 +1,51 @@
+public class HistoricalHotLineResponseWrapper {
+    public String status;
+    public Integer count;
+    public String vin;
+    public String message;
+    public String refNo;
+    public List<HotlineCases> hotlineList;
+    public HLRefNumber hlRefNumber;
+    public list<activityDetails> activityDetails;
+    
+    public class HotlineCases {
+        public String VIN;
+        public String status;
+        public String type; 
+        public String closedDate; 
+        public String createdDate; 
+        public String hlRefNo;
+        
+    }
+    
+    public class HLRefNumber {
+        public String VIN;
+        public String model;
+        public String modelCd;
+        public String carline;
+        public String customerConcern;
+        public String dlrCd;
+        public String dlrName;
+        public String dlrPhone;
+        public String hasAttachments;
+        
+    }
+    
+    public class activityDetails{
+        public String siebelActivityNumber;
+        public String description;
+        public String type;
+        public String subType;
+        public String priority;
+        public String resolution;
+        public String comments;
+        public String owner;
+        public String createdBy;
+        public String emailFrom;
+  		public String hasAttachments;
+    }
+    
+    public static HistoricalHotLineResponseWrapper parse(String json){
+        return (HistoricalHotLineResponseWrapper) System.JSON.deserialize(json, HistoricalHotLineResponseWrapper.class);
+    }
+}

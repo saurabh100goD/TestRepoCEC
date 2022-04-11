@@ -1,0 +1,100 @@
+public class MulesoftCallout {
+    public static String doCalloutGet (String URI){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Mulesoft'+URI);
+        req.setMethod('GET');
+        req.setTimeout(120000);
+        Http http = new Http();
+        HTTPResponse res = http.send(req);
+        
+        system.debug('Status Code'+res.getStatusCode());
+        system.debug('Status getBody'+res.getBody());
+        system.debug('Status getBody'+res.getStatus());
+        if(res.getStatusCode() != 200){
+            throw new AuraHandledException(Label.CEC_No_Records_Found_Error);    
+        }
+        else{
+            system.debug(res.getBody());
+            return res.getBody();
+        }
+    }
+    
+    //Uses batch endpoint- Mulesoft_Batch Named Credential
+    public static HTTPResponse doCalloutPostBatch (String URI, String body){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Mulesoft_Batch'+URI);
+        req.setMethod('POST');
+        req.setTimeout(120000);
+        req.setBody(body);
+        req.setHeader('Content-Type','application/json');
+        system.debug(req);
+        system.debug(req.getBody());
+        Http http = new Http();
+        HTTPResponse res = http.send(req);
+        if(res.getStatusCode() != 200){
+            throw new AuraHandledException(Label.CEC_Sync_With_Siebel_Failed+res.getStatus());    
+        }
+        else{
+            //Return HTTPResponse for processing
+            return res;
+        }
+    }
+    //Uses batch endpoint- Mulesoft_Batch Named Credential
+    public static ContactResponseWrapper doCalloutPostConBatch (String URI, String body){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Mulesoft_Batch'+URI);
+        req.setMethod('POST');
+        req.setTimeout(120000);
+        req.setBody(body);
+        req.setHeader('Content-Type','application/json');
+        system.debug(req);
+        system.debug(req.getBody());
+        Http http = new Http();
+        HTTPResponse res = http.send(req);
+        system.debug(req);
+        if(res.getStatusCode() != 200){
+            return null;
+        }
+        else{
+            ContactResponseWrapper ConWrapper = (ContactResponseWrapper)System.JSON.deserialize(res.getBody().replaceAll('__pc','PA'), ContactResponseWrapper.class);
+            system.debug('ConWrapper'+ConWrapper);
+            //Return HTTPResponse for processing
+            return ConWrapper;
+        }
+    }
+    
+    //Uses batch endpoint- Mulesoft_Batch Named Credential
+    public static String doCalloutPutBatch (String URI, String body){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Mulesoft_Batch'+URI);
+        req.setMethod('PUT');
+        req.setTimeout(120000);
+        req.setBody(body);
+        req.setHeader('Content-Type','application/json');
+        system.debug(req);
+        system.debug(req.getBody());
+        Http http = new Http();
+        HTTPResponse res = http.send(req);
+        if(res.getStatusCode() != 200){
+            return null;
+        }
+        else{
+        	return res.getBody();
+        }
+    }
+    //Uses batch endpoint- Mulesoft_Batch Named Credential
+    public static HTTPResponse doCalloutPutContactBatch (String URI, String body){
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Mulesoft_Batch'+URI);
+        req.setMethod('PUT');
+        req.setTimeout(120000);
+        req.setBody(body);
+        req.setHeader('Content-Type','application/json');
+        system.debug(req);
+        system.debug(req.getBody());
+        Http http = new Http();
+        HTTPResponse res = http.send(req);
+        return res;
+    }
+    
+}
