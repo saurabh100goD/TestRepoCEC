@@ -1,0 +1,70 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" 
+                controller="MazdaHotLineCasesController">
+    
+    <aura:handler name="init" value="{!this}" action="{!c.myAction}"/> <!-- This Event fires first when the component loads -->
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    
+    <aura:attribute name="SiebelSRDetailsFieldsToDisplay" type="String" default="VIN::VIN,model::Model,modelCd::Model Cd,carline::Car Line,customerConcern::Customer Concern,dlrCd::DLR Cd,dlrName::DLR Name,dlrPhone::DLR Phone,hasAttachments::Has Attachments"/>
+    
+    
+    <aura:attribute name="SRHotlineCasesResults" type="list"/>
+    <aura:attribute name="HotlineCaseColumns" type="list"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="ShowSHotline" type="Boolean" default="false"/>
+    <aura:attribute name="spinner" type="boolean" default="FALSE"/>
+    <aura:attribute name="ShowHotlineSRError" type="Boolean" default="false"/>
+    <aura:attribute name="SelectedSRNumber" type="String"/>
+    <aura:attribute name="SiebelCaseDetailColumns" type="list"/>
+    <aura:attribute name="SiebelCaseDetailResults" type="list"/>
+    <aura:attribute name="ShowSRCasesDetails" type="Boolean" default="false"/>
+    <aura:attribute name="ShowGetActivity" type="Boolean" default="false"/>
+    <aura:attribute name="ShowActivity" type="Boolean" default="false"/>
+    <aura:attribute name="ShowGetAttachment" type="Boolean" default="false"/>
+    <aura:attribute name="ShowGetClosingInfo" type="Boolean" default="false"/>
+    <aura:attribute name="ShowGetPriorityInfo" type="Boolean" default="false"/>
+    <aura:attribute name="ShowGetPealerInfo" type="Boolean" default="false"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+                <div class="slds-spinner__dot-c"></div>
+            </div>
+        </div>
+    </aura:if>
+    <lightning:card title="{!$Label.c.CEC_Hotline_SR_Cases_Text}">
+        <aura:if isTrue="{!v.ShowSHotline}">
+            
+            <lightning:datatable data="{!v.SRHotlineCasesResults}"
+                                 columns="{!v.HotlineCaseColumns}"
+                                 keyField="id"
+                                 hideCheckboxColumn="flase"
+                                 maxRowSelection="1"
+                                 onrowselection = "{!c.getSRDetails}"
+                                 />
+        </aura:if>
+        <aura:if isTrue="{!v.ShowHotlineSRError}">
+            <h1><b>{!$Label.c.Show_Hotline_SR_Error}</b></h1>
+        </aura:if>
+        <br/>
+        <aura:if isTrue="{!v.ShowSRCasesDetails}">
+            <lightning:card title="{!$Label.c.CEC_Service_Request_Detail_Text}">
+                <aura:iteration items="{!v.SiebelCaseDetailResults}" var="Fet" indexVar="key">
+                    <table class="slds-table slds-table_bordered slds-border_right slds-border_left slds-border_top  slds-border_bottom" style="margin-top:30px;">
+                        <tbody>
+                            <td class="" colspan="2">
+                                <aura:iteration items="{!Fet.feature}" var="Value" indexVar="sNo">
+                                	<li> {!Value} </li>
+                                </aura:iteration>
+                            </td>
+                        </tbody>
+                    </table>
+                </aura:iteration>
+            </lightning:card>
+        </aura:if>
+        <br/>
+    </lightning:card>
+</aura:component>
